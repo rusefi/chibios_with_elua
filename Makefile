@@ -82,9 +82,9 @@ endif
 
 # Define project name here
 PROJECT = ch
-CHIBIOSLUA    ?= $(shell pwd)
+CHIBIOSLUA    ?= .
 # Imported source files and paths
-CHIBIOS = $(CHIBIOSLUA)/../ChibiOS
+CHIBIOS = $(CHIBIOSLUA)/ChibiOS
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/boards/ST_STM32F4_DISCOVERY/board.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
