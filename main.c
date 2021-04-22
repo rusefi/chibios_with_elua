@@ -16,11 +16,9 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "test.h"
 
 #include "chprintf.h"
-#include "various/shell.h"
-#include "lis302dl.h"
+#include "shell.h"
 
 #include "usbcfg.h"
 
@@ -43,9 +41,7 @@ static void cmd_mem(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "Usage: mem\r\n");
     return;
   }
-  n = chHeapStatus(NULL, &size);
   chprintf(chp, "core free memory : %u bytes\r\n", chCoreGetStatusX());
-  chprintf(chp, "heap fragments   : %u\r\n", n);
   chprintf(chp, "heap free total  : %u bytes\r\n", size);
 }
 
@@ -61,35 +57,13 @@ static void cmd_threads(BaseSequentialStream *chp, int argc, char *argv[]) {
   chprintf(chp, "    addr    stack prio refs     state\r\n");
   tp = chRegFirstThread();
   do {
-    chprintf(chp, "%08lx %08lx %4lu %4lu %9s\r\n",
-             (uint32_t)tp, (uint32_t)tp->p_ctx.r13,
-             (uint32_t)tp->p_prio, (uint32_t)(tp->p_refs - 1),
-             states[tp->p_state]);
     tp = chRegNextThread(tp);
   } while (tp != NULL);
-}
-
-static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
-  thread_t *tp;
-
-  (void)argv;
-  if (argc > 0) {
-    chprintf(chp, "Usage: test\r\n");
-    return;
-  }
-  tp = chThdCreateFromHeap(NULL, TEST_WA_SIZE, chThdGetPriorityX(),
-                           TestThread, chp);
-  if (tp == NULL) {
-    chprintf(chp, "out of memory\r\n");
-    return;
-  }
-  chThdWait(tp);
 }
 
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},
   {"threads", cmd_threads},
-  {"test", cmd_test},
   {NULL, NULL}
 };
 
@@ -102,55 +76,9 @@ static const ShellConfig shell_cfg1 = {
 /* Accelerometer related.                                                    */
 /*===========================================================================*/
 
-/*
- * PWM configuration structure.
- * Cyclic callback enabled, channels 1 and 4 enabled without callbacks,
- * the active state is a logic one.
- */
-static const PWMConfig pwmcfg = {
-  100000,                                   /* 100kHz PWM clock frequency.  */
-  128,                                      /* PWM period is 128 cycles.    */
-  NULL,
-  {
-   {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-   {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-   {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-   {PWM_OUTPUT_ACTIVE_HIGH, NULL}
-  },
-  /* HW dependent part.*/
-  0,
-  0
-};
 
 /*
- * SPI1 configuration structure.
- * Speed 5.25MHz, CPHA=1, CPOL=1, 8bits frames, MSb transmitted first.
- * The slave select line is the pin GPIOE_CS_SPI on the port GPIOE.
- */
-static const SPIConfig spi1cfg = {
-  NULL,
-  /* HW dependent part.*/
-  GPIOE,
-  GPIOE_CS_SPI,
-  SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_CPOL | SPI_CR1_CPHA
-};
-
-/*
- * SPI2 configuration structure.
- * Speed 21MHz, CPHA=0, CPOL=0, 8bits frames, MSb transmitted first.
- * The slave select line is the pin 12 on the port GPIOA.
- */
-static const SPIConfig spi2cfg = {
-  NULL,
-  /* HW dependent part.*/
-  GPIOB,
-  12,
-  0
-};
-
-/*
- * This is a periodic thread that reads accelerometer and outputs
- * result to SPI2 and PWM.
+ * This is a periodic thread that reads accelerometer and outputs.
  */
 static THD_WORKING_AREA(waThread1, 128);
 static THD_FUNCTION(Thread1, arg) {
@@ -160,10 +88,6 @@ static THD_FUNCTION(Thread1, arg) {
   (void)arg;
   chRegSetThreadName("reader");
 
-  /* LIS302DL initialization.*/
-  lis302dlWriteRegister(&SPID1, LIS302DL_CTRL_REG1, 0x43);
-  lis302dlWriteRegister(&SPID1, LIS302DL_CTRL_REG2, 0x00);
-  lis302dlWriteRegister(&SPID1, LIS302DL_CTRL_REG3, 0x00);
 
   /* Reader thread loop.*/
   time = chVTGetSystemTime();
@@ -177,15 +101,6 @@ static THD_FUNCTION(Thread1, arg) {
       ybuf[i] = ybuf[i - 1];
     }
 
-    /* Reading MEMS accelerometer X and Y registers.*/
-    xbuf[0] = (int8_t)lis302dlReadRegister(&SPID1, LIS302DL_OUTX);
-    ybuf[0] = (int8_t)lis302dlReadRegister(&SPID1, LIS302DL_OUTY);
-
-    /* Transmitting accelerometer the data over SPI2.*/
-    spiSelect(&SPID2);
-    spiSend(&SPID2, 4, xbuf);
-    spiSend(&SPID2, 4, ybuf);
-    spiUnselect(&SPID2);
 
     /* Calculating average of the latest four accelerometer readings.*/
     x = ((int32_t)xbuf[0] + (int32_t)xbuf[1] +
@@ -195,20 +110,12 @@ static THD_FUNCTION(Thread1, arg) {
 
     /* Reprogramming the four PWM channels using the accelerometer data.*/
     if (y < 0) {
-      pwmEnableChannel(&PWMD4, 0, (pwmcnt_t)-y);
-      pwmEnableChannel(&PWMD4, 2, (pwmcnt_t)0);
     }
     else {
-      pwmEnableChannel(&PWMD4, 2, (pwmcnt_t)y);
-      pwmEnableChannel(&PWMD4, 0, (pwmcnt_t)0);
     }
     if (x < 0) {
-      pwmEnableChannel(&PWMD4, 1, (pwmcnt_t)-x);
-      pwmEnableChannel(&PWMD4, 3, (pwmcnt_t)0);
     }
     else {
-      pwmEnableChannel(&PWMD4, 3, (pwmcnt_t)x);
-      pwmEnableChannel(&PWMD4, 1, (pwmcnt_t)0);
     }
 
     /* Waiting until the next 250 milliseconds time interval.*/
@@ -296,7 +203,6 @@ int main(void) {
    * Initializes the SPI driver 1 in order to access the MEMS. The signals
    * are already initialized in the board file.
    */
-  spiStart(&SPID1, &spi1cfg);
 
   /*
    * Initializes the SPI driver 2. The SPI2 signals are routed as follow:
@@ -305,7 +211,6 @@ int main(void) {
    * PB14 - MISO.
    * PB15 - MOSI.
    */
-  spiStart(&SPID2, &spi2cfg);
   palSetPad(GPIOB, 12);
   palSetPadMode(GPIOB, 12, PAL_MODE_OUTPUT_PUSHPULL |
                            PAL_STM32_OSPEED_HIGHEST);           /* NSS.     */
@@ -318,7 +223,6 @@ int main(void) {
   /*
    * Initializes the PWM driver 4, routes the TIM4 outputs to the board LEDs.
    */
-  pwmStart(&PWMD4, &pwmcfg);
   palSetPadMode(GPIOD, GPIOD_LED4, PAL_MODE_ALTERNATE(2));      /* Green.   */
   palSetPadMode(GPIOD, GPIOD_LED3, PAL_MODE_ALTERNATE(2));      /* Orange.  */
   palSetPadMode(GPIOD, GPIOD_LED5, PAL_MODE_ALTERNATE(2));      /* Red.     */
