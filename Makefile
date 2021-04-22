@@ -85,6 +85,8 @@ PROJECT = ch
 CHIBIOSLUA    ?= .
 # Imported source files and paths
 CHIBIOS = $(CHIBIOSLUA)/ChibiOS
+# Licensing files.
+include $(CHIBIOS)/os/license/license.mk
 # Startup files.
 include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
 # HAL-OSAL files (optional).
@@ -149,6 +151,7 @@ ASMSRC = $(PORTASM) $(EXT_ASMSRC)
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOSLUA) \
+	 $(ALLINC) \
          $(EXT_INC) \
          $(CHIBIOS)/os/various/devices_lib/accel \
          $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various $(CHIBIOS)/os
