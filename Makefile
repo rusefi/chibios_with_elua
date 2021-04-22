@@ -85,12 +85,17 @@ PROJECT = ch
 CHIBIOSLUA    ?= .
 # Imported source files and paths
 CHIBIOS = $(CHIBIOSLUA)/ChibiOS
+# Startup files.
+include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
+# HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/boards/ST_STM32F4_DISCOVERY/board.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
 include $(CHIBIOS)/os/hal/osal/rt-nil/osal.mk
+# RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+# Other files (optional).
 include $(CHIBIOS)/test/rt/rt_test.mk
 
 # Define linker script file here
@@ -134,6 +139,9 @@ TCSRC =
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
 TCPPSRC =
+
+# List ASM with preprocessor source files here.
+ASMXSRC = $(ALLXASMSRC)
 
 # List ASM source files here
 ASMSRC = $(PORTASM) $(EXT_ASMSRC)
