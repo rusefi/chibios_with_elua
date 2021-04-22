@@ -2,3 +2,6 @@
 	path = ChibiOS
 	url = https://github.com/ChibiOS/ChibiOS
 	branch = stable_20.3.x
+[submodule "ext/elua"]
+	path = ext/elua
+	url = https://github.com/elua/elua.git
