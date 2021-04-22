@@ -1,5 +1,8 @@
 // i386 (Intel) CPU configuration
 
+#include "ch.h"
+#include "hal.h"
+
 #ifndef __CPU_I386_H__
 #define __CPU_I386_H__
 
@@ -13,6 +16,7 @@
 #define NUM_PWM               0
 #define NUM_ADC               0
 #define NUM_CAN               0
+#define SERMUX_SERVICE_ID_FIRST 0
 
 // CPU frequency (needed by the CPU module and MMCFS code, 0 if not used)
 #define CPU_FREQUENCY         0

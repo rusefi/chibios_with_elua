@@ -526,6 +526,13 @@
 #define WSPI_USE_MUTUAL_EXCLUSION           TRUE
 #endif
 
+/**
+ * elua 
+ */
+//~ #define CHIBILUA_SERIAL  1
+#define CHIBILUA_USBSERIAL  1
+
+
 #endif /* HALCONF_H */
 
 /** @} */

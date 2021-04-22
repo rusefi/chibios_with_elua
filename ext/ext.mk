@@ -135,9 +135,9 @@ ELUA_EXT_OBJS= $(BUILDDIR)/obj/ch_lua.o.ext $(BUILDDIR)/obj/elua_chibios_mod.o.e
 
 
 EXT_INC = $(CHIBIOSLUA)/ext \
+            $(CHIBIOSLUA)/ext/platform_chibios \
             $(ELUA)/inc \
             $(ELUA)/inc/newlib \
-            $(CHIBIOSLUA)/ext/platform_chibios \
             $(ELUA)/src/lua \
             $(ELUA)/src/modules \
             $(ELUA)/boards/headers \

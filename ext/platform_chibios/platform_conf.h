@@ -3,6 +3,9 @@
 #ifndef __PLATFORM_CONF_H__
 #define __PLATFORM_CONF_H__
 
+#include "cpu_chibios_cpu.h"
+#include "board_stm32f4chibios.h"
+
 #include "auxmods.h"
 #include "type.h"
 #include "stacks.h"
@@ -10,7 +13,7 @@
 #define BUILD_CON_GENERIC
 #define BUILD_SHELL
 #define BUILD_TERM
-#define BUILD_ROMFS
+#undef BUILD_ROMFS
 #define BUILD_XMODEM
 #define BUILD_LINENOISE
 
@@ -80,8 +83,7 @@
   {LUA_OSLIBNAME, luaopen_os},\
   {LUA_STRLIBNAME,	luaopen_string },\
   {LUA_MATHLIBNAME,	luaopen_math },\
-  {LUA_DBLIBNAME,	luaopen_debug }, \
-  {AUXLIB_CHIBIOS, luaopen_chibios, ch_thread_map}
+  {LUA_DBLIBNAME,	luaopen_debug }
 
 #define LUA_PLATFORM_LIBS_ROM\
   _ROM( AUXLIB_PIO, luaopen_pio, pio_map )\

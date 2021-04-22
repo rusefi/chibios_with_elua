@@ -4,6 +4,7 @@
 #define __PLATFORM_GENERIC_H__
 
 #include "ch.h"
+#include "hal.h"
 
 //~ #define PLATFORM_TMR_COUNTS_DOWN
 extern BaseSequentialStream *eLuaSDriver;

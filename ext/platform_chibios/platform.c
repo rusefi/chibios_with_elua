@@ -1,5 +1,7 @@
 // Platform-dependent functions
 
+#include "ch.h"
+#include "hal.h"
 #include "platform.h"
 #include "type.h"
 #include "devman.h"
@@ -16,7 +18,7 @@
 #include "utils.h"
 #include "common.h"
 #include "platform_conf.h"
-#include "hal.h"
+#include "platform_generic.h"
 
 // ****************************************************************************
 // Platform initialization
@@ -52,12 +54,12 @@ pio_type platform_pio_op( unsigned port, pio_type pinmask, int op )
 
     case PLATFORM_IO_PORT_DIR_OUTPUT:
 		new_state &= ~(ignore_pins[port]);//exclude some pins
-		palSetGroupMode(target_port,new_state, 0, PAL_STM32_MODE_OUTPUT | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_MID1 | PAL_STM32_PUDR_FLOATING );
+		palSetGroupMode(target_port,new_state, 0, PAL_STM32_MODE_OUTPUT | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_MID1 | PAL_STM32_PUPDR_FLOATING );
       break;
       
     case PLATFORM_IO_PORT_DIR_INPUT:
 		new_state &= ~(ignore_pins[port]);//exclude some pins
-		palSetGroupMode(target_port,new_state, 0, PAL_STM32_MODE_INPUT | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_MID1 | PAL_STM32_PUDR_FLOATING );
+		palSetGroupMode(target_port,new_state, 0, PAL_STM32_MODE_INPUT | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_MID1 | PAL_STM32_PUPDR_FLOATING );
       break;
             
     case PLATFORM_IO_PORT_GET_VALUE:
