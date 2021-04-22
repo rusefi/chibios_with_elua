@@ -112,7 +112,6 @@ CSRC = $(PORTSRC) \
        $(OSALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       $(CHIBIOS)/os/various/devices_lib/accel/lis302dl.c \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
@@ -146,7 +145,7 @@ TCPPSRC =
 ASMXSRC = $(ALLXASMSRC)
 
 # List ASM source files here
-ASMSRC = $(PORTASM) $(EXT_ASMSRC)
+ASMSRC = $(EXT_ASMSRC)
 
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
